@@ -1,0 +1,130 @@
+######## Loading of Imp libraries ###########
+import numpy as np
+import sys
+import matplotlib.pyplot as plt
+# import matplotlib as mpl
+import h5py as hp
+#############################################
+
+############# Loading the system PAths correclty ###################
+from plot import Path as Path
+sys.path.insert(0, Path)
+import para as para
+####################################################################
+
+from plot import plot_type as plot_type
+
+
+if(plot_type.lower() == "energy"):
+    ################# Name of Datset File to be read #########################
+    File_Name = 'glob.h5'            #### Name of file containing Spectrum dataset
+    ##########################################################################
+    
+    ############ Do not change these variables ( Reading of the Dataset ) ############
+    dataset = hp.File(Path+'/'+File_Name, 'r')   #### Reading the file for plotting
+
+    ########## Loading the dataset from H5 file to the respective variables ############
+    E_b = dataset['E_b'][:]      #### Magnetic energy ########
+    E_u = dataset['E_u'][:]      #### Velocity feild energy #########
+    T = dataset['t'][:]          #### Time #######
+    
+    Total_energy = E_u + E_b     #### Total Energy #####
+    #####################################################################################
+
+    ################################################ Plotting the spectrum ########################################################
+    plt.loglog(T,E_b,label='Magnetic_energy', color= 'red', linewidth=2)        ######## Plotting the spectrum data ##########
+    plt.loglog(T,E_u,label='Velocity_feild_energy', color= 'blue', linewidth=2)        ######## Plotting the spectrum data ##########
+    plt.loglog(T,Total_energy,'--',label='magnetic_feild_energy', color= 'green')        ######## Plotting the spectrum data ##########
+    plt.xlabel(r'$Time$')          ######### Setting the X label ############
+    plt.ylabel(r'$Energy$')     ######### Setting the Y label ############
+    plt.title('Energy Plot')  ######### Title of the Plot ###############
+    plt.legend()            ######### Enable the legend ############
+    #################################################################
+    # plt.show()
+    ##### Saving the figure (Please change the name accordingly) #####
+    plt.savefig('plots/Energy_vs_time_MHD.jpeg')  ############## File name ###############
+    ###############################################################################################
+    ################################################################################################################################
+    
+if(plot_type.lower() == "spectrum"):
+    ################# Name of Datset File to be read #########################
+    T = 1                            #### Please specify the time at which you have to plot the spectrum
+    File_Name = 'ekTk.h5'            #### Name of file containing Spectrum dataset
+    Time = int(T/para.dt)*3             #### creating proper time stamp according to the code 
+    ##########################################################################
+    
+    ############ Do not change these variables ( Reading of the Dataset ) ############
+    dataset = hp.File(Path+'/'+File_Name, 'r')   #### Reading the file for plotting
+
+    ########## Loading the dataset from H5 file to the respective variables ############
+    ek_plus_i = dataset['ek_z+'][Time,2:]       #specifying row first
+    ek_plus_j = dataset['ek_z+'][Time+1,2:]
+    ek_plus_k = dataset['ek_z+'][Time+2,2:]
+
+    ek_minus_i = dataset['ek_z-'][Time,2:]      #specifying row first
+    ek_minus_j = dataset['ek_z-'][Time+1,2:]
+    ek_minus_k = dataset['ek_z-'][Time+2,2:]
+    #####################################################################################
+
+    ########################################################################################
+    
+    ################ prepairing the dataset for plotting #####################
+    E_k = ek_plus_i+ek_plus_j+ek_plus_k+ek_minus_i+ek_minus_j+ek_minus_k   ########## Prepairing the Ek ###########
+    k= np.arange(1,E_k.shape[0]+1,1)     ######### prepairing the k ###########
+    ##########################################################################
+
+    ################################################ Plotting the spectrum ########################################################
+    plt.loglog(k,E_k,label='Spectrum', color= 'red', linewidth=3)        ######## Plotting the spectrum data ##########
+    plt.xlabel(r'$k$')          ######### Setting the X label ############
+    plt.ylabel(r'$E(k)$')     ######### Setting the Y label ############
+    plt.xlim(k[0],)      ######### Setting the x axis limits #######
+    plt.title('Spectrum Plot')  ######### Title of the Plot ###############
+    #################################################################
+
+    ################# Kolmogrov fit ( Please uncomment this section if you want to do komogrov fitting) #######################
+    # Kolmogrov_function=20*k**(-5.0/3.0)     ######### Creating kolmogrov line fit ########
+    # plt.loglog(k,Kolmogrov_function,'--',label='Kolmogrov_fit', color= 'green')   ######### Plotting kolmogrov line fit ########
+    ###########################################################################################################################
+    plt.legend()            ######### Enable the legend ############
+    # plt.show()
+    ##### Saving the figure (Please change the name accordingly) #####
+    plt.savefig('plots/Spectrum_MHD.jpeg')  ############## File name ###############
+    ###############################################################################################
+    ################################################################################################################################
+
+if(plot_type.lower() == 'flux'):
+    ################# Name of Datset File to be read #########################
+    T = 1                            #### Please specify the time at which you have to plot the spectrum
+    File_Name = 'ekTk.h5'            #### Name of file containing Spectrum dataset
+    Time = int(T/para.dt)             #### creating proper time stamp according to the code (Dont change this Unless necessary)
+    ##########################################################################
+    
+    ############ Do not change these variables ( Reading of the Dataset ) ############
+    dataset = hp.File(Path+'/'+File_Name, 'r')   #### Reading the file for plotting
+
+    ########## Loading the dataset from H5 file to the respective variables ############
+    tk_plus = dataset['Tk_z+'][Time,2:]       #specifying row first
+    tk_minus = dataset['Tk_z-'][Time,2:]      #specifying row first
+    #####################################################################################
+
+    ########################################################################################
+
+    ################ prepairing the dataset for plotting #####################
+    T_k = 2*(tk_plus + tk_minus)   ########## Prepairing the Ek ###########
+    Flux = np.cumsum(T_k)   ######### Prepairing Flux 
+    k= np.arange(1,T_k.shape[0]+1,1)     ######### prepairing the k ###########
+    ##########################################################################
+
+    ################################################ Plotting the spectrum ########################################################
+    plt.plot(k,Flux,label='Flux', color= 'red', linewidth=3)        ######## Plotting the spectrum data ##########
+    plt.xlabel(r'$k$')          ######### Setting the X label ############
+    plt.ylabel(r'$Flux$')     ######### Setting the Y label ############
+    plt.xlim(k[0],)      ######### Setting the x axis limits #######
+    plt.title('Flux Plot')  ######### Title of the Plot ###############
+    #############################################################################################################
+    plt.legend()            ######### Enable the legend ############
+    # plt.show()            ######## uncomment this to see the plot pop-up
+    ##### Saving the figure (Please change the name accordingly) #####
+    plt.savefig('plots/Flux_MHD.jpeg')  ############## File name ###############
+    ###############################################################################################
+    ################################################################################################################################
