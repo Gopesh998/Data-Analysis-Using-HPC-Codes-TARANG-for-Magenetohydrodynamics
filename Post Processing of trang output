@@ -1,0 +1,53 @@
+import numpy as np
+import scipy as sp
+import h5py
+import matplotlib.pyplot as plt
+import matplotlib as mpl
+mpl.style.use('classic')
+plt.rcParams['xtick.major.size'] = 0.7*4.0
+plt.rcParams['xtick.major.width'] = 2*0.5
+plt.rcParams['xtick.minor.size'] = 0.7*2.5
+plt.rcParams['xtick.minor.width'] = 2*0.5
+plt.rcParams['ytick.major.size'] = 0.7*4.0
+plt.rcParams['ytick.major.width'] = 2*0.5
+plt.rcParams['ytick.minor.size'] = 0.7*2.5
+plt.rcParams['ytick.minor.width'] = 2*0.5
+A=1.75*9.3#1.5*9.3
+font = {'family' : 'serif', 'weight' : 'normal', 'size' : A}
+plt.rc('font', **font)
+
+fig, axes = plt.subplots(figsize = (8, 6))
+
+output_dir = "/Users/soumyadeep/Dropbox/Family Room/Soumyadeep/codes/output"
+
+
+with h5py.File(output_dir+"/t_field_save.h5",'r') as f: 
+    t_field_save = f['t'][()]
+
+Nz = para.Nz
+
+kz = np.linspace(0, Nz//2, Nz//2+1)
+
+
+
+Temp = ncp.zeros(Nz, dtype=para.real_dtype)
+
+z = np.linspace(0,para.L[2], Nz)#, endpoint=False)
+
+for t in t_field_save:
+
+	with h5py.File(output_dir+ "/fields/Soln_1.00.h5",'r') as f:
+	     phi = f['phi'][()]
+
+	Temp = inverse_transform(phi, Temp)
+	
+	plt.plot(z, Temp, 'r', lw =2)
+
+plt.xlim(0, para.L[2])
+
+plt.ylabel("T")
+plt.xlabel("z")
+
+plt.savefig('profile_2.pdf', dpi=200, bbox_inches="tight")
+
+plt.show()
